@@ -1,12 +1,13 @@
 import SwiftUI
 import FirebaseAuth
-import Firebase
 
 struct ContentView: View {
     
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var errorMessages: String? = nil
+    @State private var isUserRegistered = false
+    @State private var userEmail: String = ""
 
     var body: some View {
         NavigationStack {
@@ -82,7 +83,7 @@ struct ContentView: View {
                             .offset(y: 40)
                     }
                     
-                    NavigationLink(destination: LoginPage()) {
+                    NavigationLink(destination: LoginView().navigationBarBackButtonHidden(true)) {
                         Text("Already have an account? Login")
                             .bold()
                             .foregroundColor(.white)
@@ -92,6 +93,11 @@ struct ContentView: View {
                     .offset(y: 100)
                 }
                 .frame(width: 400)
+                
+                // Navigation link for home page with the user email
+                NavigationLink(destination: HomePage(userEmail: userEmail).navigationBarBackButtonHidden(true), isActive: $isUserRegistered) {
+                    EmptyView()
+                }
             }
             .ignoresSafeArea()
         }
@@ -105,13 +111,18 @@ struct ContentView: View {
                 switch errorCode {
                 case .emailAlreadyInUse:
                     self.errorMessages = "The email is already registered. Please try logging in."
+                case .invalidEmail:
+                    self.errorMessages = "Invalid email format"
+                case .weakPassword:
+                    self.errorMessages = "Password is too weak"
+                    
                 default:
                     self.errorMessages = error.localizedDescription
                 }
             } else {
-                // Clear any previous error message when registration is successful
                 self.errorMessages = nil
-                // Optionally redirect to a home screen or another view
+                self.isUserRegistered = true
+                self.userEmail = email // Set user email for homePage
             }
         }
     }
